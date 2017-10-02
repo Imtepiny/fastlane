@@ -56,6 +56,7 @@ module Deliver
 
         c.action do |args, options|
           options = FastlaneCore::Configuration.create(deliverfile_options, options.__hash__)
+puts "loaded Deliverfile"
           loaded = options.load_configuration_file("Deliverfile")
 
           # Check if we already have a deliver setup in the current directory
@@ -82,6 +83,7 @@ module Deliver
 
         c.action do |args, options|
           options = FastlaneCore::Configuration.create(deliverfile_options, options.__hash__)
+puts "loaded Deliverfile"
           options.load_configuration_file("Deliverfile")
           options[:submit_for_review] = true
           options[:build_number] = "latest" unless options[:build_number]
@@ -119,6 +121,7 @@ module Deliver
 
         c.action do |args, options|
           options = FastlaneCore::Configuration.create(deliverfile_options, options.__hash__)
+puts "loaded Deliverfile"
           options.load_configuration_file("Deliverfile")
           Deliver::Runner.new(options)
           html_path = Deliver::GenerateSummary.new.run(options)
@@ -135,6 +138,7 @@ module Deliver
 
         c.action do |args, options|
           options = FastlaneCore::Configuration.create(deliverfile_options(skip_verification: true), options.__hash__)
+puts "loaded Deliverfile"
           options.load_configuration_file("Deliverfile")
           Deliver::Runner.new(options, skip_version: true) # to login...
           containing = FastlaneCore::Helper.fastlane_enabled_folder_path
@@ -151,6 +155,7 @@ module Deliver
 
         c.action do |args, options|
           options = FastlaneCore::Configuration.create(deliverfile_options(skip_verification: true), options.__hash__)
+puts "loaded Deliverfile"
           options.load_configuration_file("Deliverfile")
           Deliver::Runner.new(options) # to login...
           containing = FastlaneCore::Helper.fastlane_enabled_folder_path

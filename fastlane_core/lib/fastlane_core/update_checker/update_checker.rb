@@ -2,13 +2,14 @@ require 'excon'
 require 'digest'
 
 require 'fastlane_core/update_checker/changelog'
+require 'fastlane_core/app_identifier_guesser'
 
 module FastlaneCore
   # Verifies, the user runs the latest version of this gem
   class UpdateChecker
     def self.start_looking_for_update(gem_name)
       return if Helper.is_test?
-      return if FastlaneCore::Env.truthy?("FASTLANE_SKIP_UPDATE_CHECK")
+#      return if FastlaneCore::Env.truthy?("FASTLANE_SKIP_UPDATE_CHECK")
 
       @start_time = Time.now
 
@@ -121,18 +122,7 @@ module FastlaneCore
 
     # (optional) Returns the app identifier for the current tool
     def self.ios_app_identifier(args)
-      # args example: ["-a", "com.krausefx.app", "--team_id", "5AA97AAHK2"]
-      args.each_with_index do |current, index|
-        if current == "-a" || current == "--app_identifier"
-          return args[index + 1] if args.count > index
-        end
-      end
-
-      ["FASTLANE", "DELIVER", "PILOT", "PRODUCE", "PEM", "SIGH", "SNAPSHOT", "MATCH"].each do |current|
-        return ENV["#{current}_APP_IDENTIFIER"] if FastlaneCore::Env.truthy?("#{current}_APP_IDENTIFIER")
-      end
-
-      return CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier)
+      return FastlaneCore::AppIdentifierGuesser.guess_app_identifier(args)
     rescue
       nil # we don't want this method to cause a crash
     end
@@ -174,7 +164,7 @@ module FastlaneCore
     # Use the `FASTLANE_OPT_OUT_USAGE` variable to opt out
     # The resulting value is e.g. ce12f8371df11ef6097a83bdf2303e4357d6f5040acc4f76019489fa5deeae0d
     def self.p_hash(args, gem_name)
-      return nil if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
+      #return nil if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
       require 'credentials_manager'
 
       app_identifier = app_id(args, gem_name)
@@ -198,11 +188,12 @@ module FastlaneCore
         app_identifier = ios_app_identifier(args)
         @platform = :ios if app_identifier
       end
+puts "app_identifier: #{app_identifier}"
       return app_identifier
     end
 
     def self.send_launch_analytic_events_for(gem_name)
-      return if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
+#      return if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
 
       ci = Helper.is_ci?.to_s
       project_hash = p_hash(ARGV, gem_name)
@@ -275,7 +266,7 @@ module FastlaneCore
     end
 
     def self.send_completion_events_for(gem_name)
-      return if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
+#      return if FastlaneCore::Env.truthy?("FASTLANE_OPT_OUT_USAGE")
 
       ci = Helper.is_ci?.to_s
       install_method = if Helper.rubygems?
